@@ -417,7 +417,7 @@ const server = http.createServer(async (req, res) => {
   res.writeHead(404); res.end('Not found');
 });
 
-server.listen(PORT, () => {
+server.listen(PORT, '0.0.0.0', () => {
   console.log(`\n✅ CRautos Bot server running at http://localhost:${PORT}`);
   console.log(`   Open http://localhost:${PORT} in your browser\n`);
 });
