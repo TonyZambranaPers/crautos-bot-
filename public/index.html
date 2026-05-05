@@ -1,0 +1,861 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>CRautos Bot</title>
+<style>
+  *{box-sizing:border-box;margin:0;padding:0}
+  :root{
+    --bg:#ffffff;--bg2:#f5f5f3;--bg3:#eeede9;
+    --txt:#1a1a1a;--txt2:#666;--txt3:#999;
+    --border:#e0e0dc;--border2:#c8c8c4;
+    --green-bg:#eaf3de;--green-txt:#27500a;--green-border:#97c459;
+    --amber-bg:#faeeda;--amber-txt:#633806;--amber-border:#ef9f27;
+    --blue-bg:#e6f1fb;--blue-txt:#0c447c;
+    --red-bg:#fcebeb;--red-txt:#791f1f;
+    --radius:8px;--radius-lg:12px;
+  }
+  body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;background:var(--bg3);color:var(--txt);font-size:14px}
+  .app{max-width:900px;margin:0 auto;padding:1.25rem}
+  .topbar{display:flex;align-items:center;justify-content:space-between;margin-bottom:1.1rem;flex-wrap:wrap;gap:.5rem}
+  h1{font-size:18px;font-weight:600}
+  .badges{display:flex;gap:.4rem;flex-wrap:wrap;align-items:center}
+  .badge{font-size:11px;padding:3px 9px;border-radius:20px;font-weight:500}
+  .b-on{background:var(--green-bg);color:var(--green-txt)}
+  .b-off{background:var(--bg2);color:var(--txt2)}
+  .b-amber{background:var(--amber-bg);color:var(--amber-txt)}
+  .b-red{background:var(--red-bg);color:var(--red-txt)}
+  .server-dot{width:7px;height:7px;border-radius:50%;display:inline-block;margin-right:5px}
+  .dot-green{background:#3b6d11}.dot-red{background:#a32d2d}.dot-amber{background:#ba7517}
+  .timer{font-size:11px;font-family:monospace;color:var(--txt2);background:var(--bg2);padding:3px 8px;border-radius:var(--radius)}
+  .notif{padding:.55rem 1rem;border-radius:var(--radius);font-size:13px;margin-bottom:.85rem;display:none;border:1px solid}
+  .notif-ok{background:var(--green-bg);color:var(--green-txt);border-color:var(--green-border)}
+  .notif-drop{background:var(--amber-bg);color:var(--amber-txt);border-color:var(--amber-border)}
+  .notif-err{background:var(--red-bg);color:var(--red-txt);border-color:#f09595}
+  .tabs{display:flex;gap:.35rem;margin-bottom:1rem;flex-wrap:wrap}
+  .tab{padding:5px 13px;border-radius:20px;font-size:13px;cursor:pointer;border:1px solid var(--border);background:var(--bg);color:var(--txt2);transition:all .15s}
+  .tab:hover{background:var(--bg2)}
+  .tab.active{background:var(--txt);color:var(--bg);border-color:transparent}
+  .card{background:var(--bg);border:1px solid var(--border);border-radius:var(--radius-lg);padding:.9rem 1.1rem;margin-bottom:.85rem}
+  .sec{font-size:11px;font-weight:600;color:var(--txt2);text-transform:uppercase;letter-spacing:.05em;margin-bottom:.65rem}
+  .g2{display:grid;grid-template-columns:1fr 1fr;gap:.65rem}
+  .g3{display:grid;grid-template-columns:1fr 1fr 1fr;gap:.65rem}
+  label{font-size:12px;color:var(--txt2);display:block;margin-bottom:3px}
+  input,select{width:100%;padding:7px 10px;border:1px solid var(--border);border-radius:var(--radius);font-size:13px;background:var(--bg);color:var(--txt);outline:none}
+  input:focus,select:focus{border-color:var(--txt);box-shadow:0 0 0 2px rgba(0,0,0,.08)}
+  .actions{display:flex;gap:.55rem;flex-wrap:wrap;margin-top:.85rem}
+  button{font-size:13px;cursor:pointer;padding:7px 15px;border-radius:var(--radius);border:1px solid var(--border);background:var(--bg);color:var(--txt);transition:all .12s}
+  button:hover{background:var(--bg2)}
+  .btn-p{background:var(--txt);color:var(--bg);border-color:transparent;font-weight:500}
+  .btn-p:hover{opacity:.85;background:var(--txt)}
+  .btn-p:disabled{opacity:.45;cursor:not-allowed}
+  .pbar{height:3px;background:var(--bg3);border-radius:2px;margin-top:.55rem;overflow:hidden}
+  .pfill{height:100%;background:var(--txt);width:0%;transition:width .3s}
+  .plabel{font-size:12px;color:var(--txt2);margin-top:.45rem}
+  .r-header{display:flex;align-items:center;justify-content:space-between;margin-bottom:.6rem;flex-wrap:wrap;gap:.4rem}
+  .r-count{font-size:12px;color:var(--txt2)}
+  .ccar{border:1px solid var(--border);border-radius:var(--radius);padding:.6rem .9rem;margin-bottom:.4rem;display:flex;align-items:flex-start;justify-content:space-between;gap:.5rem;transition:background .1s}
+  .ccar:hover{background:var(--bg2)}
+  .ctitle{font-size:14px;font-weight:600}
+  .cmeta{font-size:12px;color:var(--txt2);margin-top:2px;line-height:1.4}
+  .cprice{font-size:15px;font-weight:600;text-align:right;white-space:nowrap}
+  .cusd{font-size:11px;color:var(--txt2)}
+  .pill{font-size:10px;font-weight:600;padding:2px 6px;border-radius:20px;margin-left:4px}
+  .pill-new{background:var(--green-bg);color:var(--green-txt)}
+  .pill-drop{background:var(--amber-bg);color:var(--amber-txt)}
+  .drop-info{font-size:12px;color:#854f0b;margin-top:3px;display:flex;align-items:center;gap:4px}
+  .arrow-dn{display:inline-block;width:0;height:0;border-left:4px solid transparent;border-right:4px solid transparent;border-top:6px solid #ba7517}
+  .empty{text-align:center;padding:2rem;color:var(--txt2);font-size:13px}
+  .log-box{background:var(--bg2);border-radius:var(--radius);padding:.65rem .9rem;max-height:180px;overflow-y:auto;font-size:11px;font-family:monospace;color:var(--txt2);line-height:1.7;white-space:pre-wrap}
+  .stat-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(120px,1fr));gap:.5rem;margin-top:.75rem}
+  .stat{background:var(--bg2);border-radius:var(--radius);padding:.65rem .9rem}
+  .stat-lbl{font-size:11px;color:var(--txt2)}
+  .stat-val{font-size:20px;font-weight:600;margin-top:2px}
+  .wgrid{display:grid;grid-template-columns:repeat(auto-fill,minmax(165px,1fr));gap:.5rem}
+  .wcard{border:1px solid var(--border);border-radius:var(--radius);padding:.65rem .9rem;cursor:pointer;transition:all .12s;background:var(--bg)}
+  .wcard:hover{background:var(--bg2)}
+  .wcard.on{border:2px solid var(--txt)}
+  .wcard-name{font-size:13px;font-weight:600}
+  .wcard-sub{font-size:11px;color:var(--txt2);margin-top:2px}
+  .wcard-price{font-size:12px;color:var(--green-txt);font-weight:600;margin-top:3px}
+  .wcard-drop{font-size:11px;color:#854f0b;margin-top:2px}
+  a{color:#185fa5;text-decoration:none}
+  a:hover{text-decoration:underline}
+  @media(max-width:600px){.g3{grid-template-columns:1fr 1fr}.g2{grid-template-columns:1fr}}
+
+  /* deal finder */
+  .deal-card{border:1px solid var(--border);border-radius:var(--radius);padding:.75rem 1rem;margin-bottom:.55rem;display:flex;align-items:flex-start;gap:.75rem;transition:background .1s}
+  .deal-card:hover{background:var(--bg2)}
+  .deal-rank{font-size:22px;font-weight:700;width:36px;text-align:center;flex-shrink:0;line-height:1}
+  .deal-rank.gold{color:#c8960c}.deal-rank.silver{color:#888}.deal-rank.bronze{color:#a0622a}
+  .deal-body{flex:1;min-width:0}
+  .deal-title{font-size:14px;font-weight:600}
+  .deal-meta{font-size:12px;color:var(--txt2);margin-top:2px;line-height:1.5}
+  .deal-score-bar{height:6px;border-radius:3px;margin-top:6px;background:var(--bg3);overflow:hidden}
+  .deal-score-fill{height:100%;border-radius:3px;transition:width .6s}
+  .deal-score-fill.s-great{background:#3b9e3b}.deal-score-fill.s-good{background:#7dba37}.deal-score-fill.s-ok{background:#e8a020}
+  .deal-right{flex-shrink:0;text-align:right}
+  .deal-price{font-size:16px;font-weight:700}
+  .deal-saving{font-size:12px;color:var(--green-txt);font-weight:600;margin-top:2px}
+  .deal-vs{font-size:11px;color:var(--txt2)}
+  .score-badge{font-size:11px;font-weight:700;padding:3px 8px;border-radius:20px;display:inline-block;margin-top:4px}
+  .sb-great{background:var(--green-bg);color:var(--green-txt)}.sb-good{background:#d4edba;color:#3a6b0f}.sb-ok{background:var(--amber-bg);color:var(--amber-txt)}
+  .insight-row{display:flex;gap:.4rem;flex-wrap:wrap;margin-top:5px}
+  .insight{font-size:10px;font-weight:600;padding:2px 7px;border-radius:20px;background:var(--bg2);color:var(--txt2);border:1px solid var(--border)}
+  .insight.i-pos{background:#e8f4e8;color:#2a6b2a;border-color:#b5d9b5}.insight.i-neg{background:#fdf0e0;color:#7a4f00;border-color:#e8c97a}
+  .mkt-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(185px,1fr));gap:.5rem;margin-bottom:.85rem}
+  .mkt-card{background:var(--bg);border:1px solid var(--border);border-radius:var(--radius);padding:.65rem .9rem}
+  .mkt-model{font-size:12px;font-weight:600}.mkt-avg{font-size:18px;font-weight:700;margin-top:2px}.mkt-sub{font-size:11px;color:var(--txt2);margin-top:1px}
+</style>
+</head>
+<body>
+<div class="app">
+  <div id="notif" class="notif notif-ok"></div>
+
+  <div class="topbar">
+    <div style="display:flex;align-items:center;gap:.75rem;flex-wrap:wrap">
+      <h1>CRautos Bot</h1>
+      <span id="srv-badge" class="badge b-off"><span class="server-dot dot-amber" id="srv-dot"></span>Connecting...</span>
+      <span id="sched-badge" class="badge b-off">Scheduler off</span>
+      <span id="hot-badge" class="badge b-amber">Hot cars: 6</span>
+    </div>
+    <div style="display:flex;align-items:center;gap:.75rem">
+      <span id="timer" class="timer" style="display:none"></span>
+      <span id="user-label" style="font-size:12px;color:var(--txt2)"></span>
+      <a href="/api/logout" style="font-size:12px;color:var(--txt2);border:1px solid var(--border);padding:4px 10px;border-radius:20px;text-decoration:none" onmouseover="this.style.background='var(--bg2)'" onmouseout="this.style.background=''">Sign out</a>
+    </div>
+
+  <div class="tabs">
+    <button class="tab active" onclick="sw('filters')">Filters</button>
+    <button class="tab" onclick="sw('hotcars')">Price tracker <span id="drop-tab-count"></span></button>
+    <button class="tab" onclick="sw('results')">Results <span id="res-tab-count"></span></button>
+    <button class="tab" onclick="sw('log')">Log</button>
+    <button class="tab" onclick="sw('deals')">🔥 Deal Finder <span id="deals-tab-count"></span></button>
+  </div>
+
+  <!-- FILTERS -->
+  <div id="tab-filters">
+    <div class="card">
+      <div class="sec">Vehicle details</div>
+      <div class="g3">
+        <div><label>Make</label><input id="f-make" placeholder="e.g. Honda"></div>
+        <div><label>Model</label><input id="f-model" placeholder="e.g. CRV"></div>
+        <div><label>Transmission</label>
+          <select id="f-trans"><option value="">Any</option><option value="Automático">Automático</option><option value="Manual">Manual</option></select>
+        </div>
+      </div>
+      <div class="g2" style="margin-top:.65rem">
+        <div><label>Year from</label><input id="f-ymin" type="number" placeholder="2012"></div>
+        <div><label>Year to</label><input id="f-ymax" type="number" placeholder="2024"></div>
+      </div>
+    </div>
+    <div class="card">
+      <div class="sec">Price range (¢ colones)</div>
+      <div class="g2">
+        <div><label>Min</label><input id="f-pmin" type="number" placeholder="3000000"></div>
+        <div><label>Max</label><input id="f-pmax" type="number" placeholder="15000000"></div>
+      </div>
+    </div>
+    <div class="card">
+      <div class="sec">Max kilometers</div>
+      <div class="g2">
+        <div><label>Max km (leave blank for any)</label><input id="f-kmmax" type="number" placeholder="e.g. 100000"></div>
+      </div>
+    </div>
+    <div class="card">
+      <div class="sec">Scheduler</div>
+      <div class="g2">
+        <div><label>Interval</label>
+          <select id="f-interval">
+            <option value="7200000">Every 2 hours</option>
+            <option value="3600000">Every 1 hour</option>
+            <option value="14400000">Every 4 hours</option>
+            <option value="43200000">Every 12 hours</option>
+          </select>
+        </div>
+        <div><label>Pages to scan</label>
+          <select id="f-pages">
+            <option value="3">3 pages (~75 listings)</option>
+            <option value="5">5 pages (~125 listings)</option>
+            <option value="10">10 pages (~250 listings)</option>
+          </select>
+        </div>
+      </div>
+    </div>
+    <div class="actions">
+      <button class="btn-p" id="btn-scan" onclick="runScan('custom')">Scan now</button>
+      <button class="btn-p" id="btn-scan-all" onclick="scanAll()" style="background:#185fa5">Scan all makes</button>
+      <button id="btn-sched" onclick="toggleSched()">Start scheduler</button>
+      <button onclick="clearAll()">Clear results</button>
+    </div>
+    <div style="font-size:12px;color:var(--txt2);margin-top:.5rem">
+      <strong>Scan now</strong> — uses your filters above &nbsp;·&nbsp; 
+      <strong>Scan all makes</strong> — ignores filters, loads everything for Deal Finder
+    </div>
+    <div id="prog-wrap" style="display:none;margin-top:.75rem">
+      <div class="plabel" id="prog-label">Scanning...</div>
+      <div class="pbar"><div class="pfill" id="pfill"></div></div>
+    </div>
+  </div>
+
+  <!-- HOT CARS -->
+  <div id="tab-hotcars" style="display:none">
+    <div class="card">
+      <div class="sec">Tracked models — click card to toggle on/off</div>
+      <div class="wgrid" id="wgrid"></div>
+      <div style="border-top:1px solid var(--border);margin-top:.85rem;padding-top:.85rem">
+        <div class="sec" style="margin-bottom:.5rem">Add a model to track</div>
+        <div style="display:flex;gap:.5rem;flex-wrap:wrap;align-items:flex-end">
+          <div style="flex:1;min-width:120px"><label>Make</label><input id="add-make" placeholder="e.g. Honda" autocomplete="off"></div>
+          <div style="flex:1;min-width:140px"><label>Model</label><input id="add-model" placeholder="e.g. CR-V" autocomplete="off"></div>
+          <button class="btn-p" onclick="addHotModel()" style="margin-top:auto;white-space:nowrap">+ Add model</button>
+        </div>
+        <div id="add-err" style="font-size:12px;color:var(--red-txt);margin-top:.4rem;display:none"></div>
+      </div>
+    </div>
+    <div class="card">
+      <div class="sec">Drop thresholds</div>
+      <div class="g2">
+        <div><label>Min colones drop (¢)</label><input id="thresh-c" type="number" value="300000"></div>
+        <div><label>Or % drop</label><input id="thresh-pct" type="number" value="5" min="1" max="50"></div>
+      </div>
+    </div>
+    <div class="card">
+      <div class="sec">Price drop alerts</div>
+      <div id="drop-list"><div class="empty">No drops detected yet. Run a hot scan.</div></div>
+    </div>
+    <div class="actions">
+      <button class="btn-p" id="btn-hot-scan" onclick="runScan('hot')">Scan hot cars now</button>
+      <button id="btn-hot-sched" onclick="toggleHotSched()">Start hot scheduler</button>
+    </div>
+    <div id="hot-prog-wrap" style="display:none;margin-top:.75rem">
+      <div class="plabel" id="hot-prog-label">Scanning...</div>
+      <div class="pbar"><div class="pfill" id="hpfill"></div></div>
+    </div>
+  </div>
+
+  <!-- RESULTS -->
+  <div id="tab-results" style="display:none">
+    <div class="card">
+      <div class="r-header">
+        <span class="r-count" id="rcount">No results yet</span>
+        <select id="sort" onchange="renderResults()" style="width:auto;font-size:12px;padding:4px 8px">
+          <option value="new">Newest first</option>
+          <option value="drop">Price drops first</option>
+          <option value="pa">Price low → high</option>
+          <option value="pd">Price high → low</option>
+          <option value="yr">Year newest</option>
+        </select>
+      </div>
+      <div id="rlist"><div class="empty">Run a scan to see results.</div></div>
+    </div>
+  </div>
+
+  <!-- LOG -->
+  <div id="tab-log" style="display:none">
+    <div class="card">
+      <div class="sec">Activity log</div>
+      <div class="log-box" id="logbox">Ready. Make sure server.js is running.\n</div>
+    </div>
+    <div class="stat-grid">
+      <div class="stat"><div class="stat-lbl">Results</div><div class="stat-val" id="s-found">0</div></div>
+      <div class="stat"><div class="stat-lbl">Price drops</div><div class="stat-val" id="s-drops">0</div></div>
+      <div class="stat"><div class="stat-lbl">Scans run</div><div class="stat-val" id="s-scans">0</div></div>
+      <div class="stat"><div class="stat-lbl">Last scan</div><div class="stat-val" style="font-size:12px" id="s-last">—</div></div>
+    </div>
+  </div>
+
+  <!-- DEAL FINDER -->
+  <div id="tab-deals" style="display:none">
+    <div class="card" style="background:linear-gradient(135deg,#f0fae8,#fff9ee);border-color:#c8e6a0">
+      <div style="display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:.5rem">
+        <div>
+          <div style="font-size:15px;font-weight:700">🔥 Deal Finder</div>
+          <div style="font-size:12px;color:var(--txt2);margin-top:2px">Analyzes all scanned listings and scores each car against the market average for its model. Needs at least one scan first.</div>
+        </div>
+        <div style="display:flex;gap:.5rem;flex-wrap:wrap">
+          <select id="deal-model-filter" style="width:auto;font-size:12px;padding:5px 9px" onchange="renderDeals()">
+            <option value="">All models</option>
+          </select>
+          <select id="deal-min-score" style="width:auto;font-size:12px;padding:5px 9px" onchange="renderDeals()">
+            <option value="0">Any deal</option>
+            <option value="60">Good deals (60+)</option>
+            <option value="75">Great deals (75+)</option>
+            <option value="88">🔥 Hot steals only (88+)</option>
+          </select>
+          <button class="btn-p" onclick="analyzeDeals()">Analyze now</button>
+        </div>
+      </div>
+    </div>
+    <div id="mkt-overview"></div>
+    <div class="card" style="padding:.6rem 1rem">
+      <div class="r-header">
+        <span class="r-count" id="deal-count">Run a scan + analyze to see deals.</span>
+        <span style="font-size:11px;color:var(--txt2)">Sorted by Deal Score</span>
+      </div>
+      <div id="deal-list"><div class="empty">Run a scan on any tab first, then click Analyze.</div></div>
+    </div>
+  </div>
+</div>
+
+<script>
+const API = 'http://localhost:3333';
+
+const DEFAULT_HOT_MODELS = [
+  {id:'corolla',  make:'Toyota',     model:'Corolla'},
+  {id:'fortuner', make:'Toyota',     model:'Fortuner'},
+  {id:'prado',    make:'Toyota',     model:'Prado'},
+  {id:'tercel',   make:'Toyota',     model:'Tercel'},
+  {id:'montero',  make:'Mitsubishi', model:'Montero'},
+  {id:'msport',   make:'Mitsubishi', model:'Montero Sport'},
+];
+
+function loadHotModels() {
+  try { const s=localStorage.getItem('crautos_hot_models'); return s?JSON.parse(s):JSON.parse(JSON.stringify(DEFAULT_HOT_MODELS)); }
+  catch(e) { return JSON.parse(JSON.stringify(DEFAULT_HOT_MODELS)); }
+}
+function saveHotModels() {
+  localStorage.setItem('crautos_hot_models', JSON.stringify(HOT_MODELS));
+}
+
+let HOT_MODELS = loadHotModels();
+let allResults = [], seenIds = new Set(), dropAlerts = [];
+let activeHot = new Set(HOT_MODELS.map(m=>m.id));
+let schedOn=false, hotSchedOn=false;
+let schedTimer=null, hotSchedTimer=null, cdInterval=null;
+let nextScan=null;
+let stats = {found:0, drops:0, scans:0, last:'—'};
+
+// ── server health check ──
+async function checkServer() {
+  try {
+    const r = await fetch(API+'/health');
+    const d = await r.json();
+    document.getElementById('srv-badge').innerHTML = '<span class="server-dot dot-green"></span>Server connected';
+    document.getElementById('srv-badge').className = 'badge b-on';
+    log('Server connected. Price history: '+d.historySize+' entries, uptime: '+d.uptime);
+  } catch(e) {
+    document.getElementById('srv-badge').innerHTML = '<span class="server-dot dot-red"></span>Server offline';
+    document.getElementById('srv-badge').className = 'badge b-red';
+  }
+}
+checkServer();
+setInterval(checkServer, 30000);
+
+// show logged in user
+fetch('/health').then(r=>r.json()).then(d=>{
+  if(d.user) document.getElementById('user-label').textContent = '👤 '+d.user;
+}).catch(()=>{});
+
+function sw(tab) {
+  ['filters','hotcars','results','log','deals'].forEach(t=>{
+    document.getElementById('tab-'+t).style.display=t===tab?'':'none';
+  });
+  document.querySelectorAll('.tab').forEach((b,i)=>{
+    b.classList.toggle('active',['filters','hotcars','results','log','deals'][i]===tab);
+  });
+}
+
+function log(msg) {
+  const b = document.getElementById('logbox');
+  const ts = new Date().toLocaleTimeString();
+  b.textContent = '['+ts+'] '+msg+'\n'+b.textContent;
+}
+
+function notify(msg, type='ok') {
+  const n = document.getElementById('notif');
+  n.textContent = msg;
+  n.className = 'notif notif-'+(type==='drop'?'drop':type==='err'?'err':'ok');
+  n.style.display = 'block';
+  setTimeout(()=>n.style.display='none', 7000);
+  if(Notification.permission==='granted') new Notification('CRautos Bot', {body:msg});
+}
+
+function colPrice(car) { return car.priceC || (car.priceU * 482) || 0; }
+
+async function runScan(mode) {
+  const isHot = mode === 'hot';
+  const progWrap = document.getElementById(isHot?'hot-prog-wrap':'prog-wrap');
+  const fill = document.getElementById(isHot?'hpfill':'pfill');
+  const plabel = document.getElementById(isHot?'hot-prog-label':'prog-label');
+  const btn = document.getElementById(isHot?'btn-hot-scan':'btn-scan');
+  btn.disabled = true;
+  progWrap.style.display = '';
+  fill.style.width = '4%';
+
+  const threshC = document.getElementById('thresh-c').value || 300000;
+  const threshPct = document.getElementById('thresh-pct').value || 5;
+  let newDrops = [], totalNew = 0;
+
+  if (isHot) {
+    const active = HOT_MODELS.filter(m=>activeHot.has(m.id));
+    for (let i=0; i<active.length; i++) {
+      const m = active[i];
+      plabel.textContent = `Scanning ${m.make} ${m.model}... (${i+1}/${active.length})`;
+      fill.style.width = Math.round(((i+1)/active.length)*92)+'%';
+      try {
+        const params = new URLSearchParams({make:m.make, model:m.model, threshC, threshPct, page:1});
+        const r = await fetch(API+'/scan?'+params);
+        const d = await r.json();
+        if (d.ok) {
+          d.cars.forEach(c => {
+            if (c.isDrop) { newDrops.push(c); stats.drops++; }
+            if (!seenIds.has(c.id)) { seenIds.add(c.id); allResults.unshift(c); totalNew++; }
+          });
+          log(`${m.make} ${m.model}: ${d.count} found, ${d.cars.filter(c=>c.isDrop).length} drops`);
+        } else { log(`Error scanning ${m.model}: ${d.error}`); }
+      } catch(e) { log(`Fetch error for ${m.model}: ${e.message}`); }
+      await new Promise(r=>setTimeout(r,400));
+    }
+    newDrops.forEach(c => {
+      dropAlerts.unshift(c);
+      notify(`Price drop: ${c.make} ${c.model} ${c.year} down ¢${c.dropAmt?.toLocaleString()} (${c.dropPct}%)`, 'drop');
+    });
+    renderDropAlerts();
+    updateWCards();
+    document.getElementById('drop-tab-count').textContent = dropAlerts.length>0?'('+dropAlerts.length+')':'';
+    if (!newDrops.length) log('Hot scan complete. No price drops above threshold.');
+  } else {
+    const pages = parseInt(document.getElementById('f-pages').value)||3;
+    const make = document.getElementById('f-make').value.trim();
+    const model = document.getElementById('f-model').value.trim();
+    const params = {
+      make, model,
+      trans: document.getElementById('f-trans').value,
+      ymin: document.getElementById('f-ymin').value,
+      ymax: document.getElementById('f-ymax').value,
+      pmin: document.getElementById('f-pmin').value,
+      pmax: document.getElementById('f-pmax').value,
+      kmmax: document.getElementById('f-kmmax').value,
+      threshC, threshPct,
+      page: 1,
+      totalPages: pages
+    };
+
+    // Single request — server handles all pages internally
+    plabel.textContent = `Scanning ${pages} pages${make ? ' for ' + make : ''}${model ? ' ' + model : ''}...`;
+    fill.style.width = '15%';
+    try {
+      const qs = new URLSearchParams(params);
+      const r = await fetch(API+'/scan?'+qs);
+      const d = await r.json();
+      fill.style.width = '92%';
+      if (d.ok) {
+        d.cars.forEach(c => {
+          if (!seenIds.has(c.id)) { seenIds.add(c.id); allResults.unshift(c); totalNew++; }
+        });
+        log(`Scanned ${d.totalIds} listings across ${pages} pages — ${d.count} matched filters`);
+        if (totalNew > 0) notify(`${totalNew} new matching listing(s) found!`);
+        else notify('Scan complete — no new matches this run.');
+      } else {
+        log(`Scan error: ${d.error}`);
+        notify('Scan error — check Log tab', 'err');
+      }
+    } catch(e) {
+      log(`Scan failed: ${e.message} — is server.js running?`);
+      notify('Cannot reach server — is node server.js running?', 'err');
+    }
+  }
+
+  fill.style.width = '100%';
+  setTimeout(()=>{ progWrap.style.display='none'; fill.style.width='0%'; },600);
+  btn.disabled = false;
+  if (window._afterScanHook) window._afterScanHook();
+  stats.scans++; stats.found = allResults.length; stats.last = new Date().toLocaleTimeString();
+  document.getElementById('s-found').textContent = stats.found;
+  document.getElementById('s-drops').textContent = stats.drops;
+  document.getElementById('s-scans').textContent = stats.scans;
+  document.getElementById('s-last').textContent = stats.last;
+  renderResults();
+  document.getElementById('res-tab-count').textContent = allResults.length>0?'('+allResults.length+')':'';
+}
+
+function renderResults() {
+  const list = document.getElementById('rlist');
+  const sort = document.getElementById('sort').value;
+  let data = [...allResults];
+  if (sort==='drop') data.sort((a,b)=>((b.isDrop?1:0)-(a.isDrop?1:0))||((b.dropAmt||0)-(a.dropAmt||0)));
+  else if (sort==='pa') data.sort((a,b)=>colPrice(a)-colPrice(b));
+  else if (sort==='pd') data.sort((a,b)=>colPrice(b)-colPrice(a));
+  else if (sort==='yr') data.sort((a,b)=>b.year-a.year);
+  else data.sort((a,b)=>b.foundAt-a.foundAt);
+  if (!data.length) { list.innerHTML='<div class="empty">No results yet.</div>'; return; }
+  document.getElementById('rcount').textContent = data.length+' listing'+(data.length!==1?'s':'');
+  list.innerHTML = data.map(c => {
+    const p = c.priceC ? '¢'+c.priceC.toLocaleString() : (c.priceU?'$'+c.priceU.toLocaleString():'—');
+    const usd = c.priceC ? '≈ $'+Math.round(c.priceC/482).toLocaleString() : '';
+    const dropRow = c.isDrop ? `<div class="drop-info"><span class="arrow-dn"></span>¢${c.dropAmt?.toLocaleString()} drop (${c.dropPct}%) from ¢${c.prevPrice?.toLocaleString()}</div>` : '';
+    const kmBadge = c.km > 0 ? `<span style="font-size:11px;font-weight:600;color:#2a6b2a">📍 ${c.km.toLocaleString()} km</span>` : '';
+    const provBadge = c.province ? `<span style="font-size:11px;color:var(--txt2)">${c.province}</span>` : '';
+    const negBadge = c.negotiable ? `<span style="font-size:10px;font-weight:600;padding:1px 6px;border-radius:20px;background:#e8f4e8;color:#2a6b2a;border:1px solid #b5d9b5">Negociable</span>` : '';
+    return `<a href="${c.url}" target="_blank" class="ccar" style="text-decoration:none;color:inherit">
+      <div style="min-width:0;flex:1">
+        <div class="ctitle">${c.make||''} ${c.model||''} ${c.year?'('+c.year+')':''}
+          ${c.isNew?'<span class="pill pill-new">new</span>':''}
+          ${c.isDrop?`<span class="pill pill-drop">-${c.dropPct}%</span>`:''}
+        </div>
+        <div class="cmeta" style="display:flex;flex-wrap:wrap;gap:6px;margin-top:3px">
+          ${c.trans?`<span>${c.trans}</span>`:''}
+          ${kmBadge}
+          ${c.style?`<span>${c.style}</span>`:''}
+          ${c.fuel?`<span>${c.fuel}</span>`:''}
+          ${provBadge}
+          ${negBadge}
+        </div>
+        ${c.desc?`<div style="font-size:11px;color:var(--txt2);margin-top:2px">${c.desc.slice(0,80)}${c.desc.length>80?'…':''}</div>`:''}
+        ${dropRow}
+      </div>
+      <div style="flex-shrink:0;text-align:right;padding-left:.5rem">
+        <div class="cprice">${p}</div>
+        ${usd?`<div class="cusd">${usd}</div>`:''}
+      </div>
+    </a>`;
+  }).join('');
+}
+
+function renderDropAlerts() {
+  const list = document.getElementById('drop-list');
+  if (!dropAlerts.length) { list.innerHTML='<div class="empty">No drops detected yet.</div>'; return; }
+  list.innerHTML = dropAlerts.map(c => {
+    const now = c.priceC?'¢'+c.priceC.toLocaleString():(c.priceU?'$'+c.priceU.toLocaleString():'—');
+    const was = c.prevPrice?'¢'+c.prevPrice.toLocaleString():'—';
+    return `<div class="ccar" style="border-left:3px solid #ba7517;border-radius:0 ${getComputedStyle(document.documentElement).getPropertyValue('--radius').trim()} ${getComputedStyle(document.documentElement).getPropertyValue('--radius').trim()} 0">
+      <div>
+        <div class="ctitle">${c.make} ${c.model} ${c.year||''} <span class="pill pill-drop">-${c.dropPct}%</span></div>
+        <div class="cmeta">${was} → ${now}</div>
+        <div class="drop-info"><span class="arrow-dn"></span>Dropped ¢${c.dropAmt?.toLocaleString()}</div>
+        <a href="${c.url}" target="_blank" style="font-size:11px;margin-top:3px;display:inline-block">View listing →</a>
+      </div>
+      <div style="flex-shrink:0"><div class="cprice" style="color:#27500a">${now}</div></div>
+    </div>`;
+  }).join('');
+}
+
+
+// ── DEAL FINDER ──────────────────────────────────────────
+function scorecar(car, avgPrice, minPrice, maxPrice, sampleSize) {
+  if (!avgPrice || sampleSize < 2) return null;
+  const price = colPrice(car);
+  if (!price || !car.year) return null;
+
+  let score = 50; // baseline
+  const insights = [];
+
+  // 1. Price vs market average (biggest factor — up to ±40 pts)
+  const pctBelowAvg = (avgPrice - price) / avgPrice;
+  const priceScore = Math.round(pctBelowAvg * 120); // 33% below = +40pts
+  score += Math.max(-40, Math.min(40, priceScore));
+  if (pctBelowAvg >= 0.2) insights.push({t:'20%+ below avg', pos:true});
+  else if (pctBelowAvg >= 0.1) insights.push({t:'10%+ below avg', pos:true});
+  else if (pctBelowAvg < -0.1) insights.push({t:'Above market avg', pos:false});
+
+  // 2. Year bonus (newer = better, up to +15)
+  const currentYear = new Date().getFullYear();
+  const age = currentYear - car.year;
+  if (age <= 3) { score += 15; insights.push({t: car.year+' model', pos:true}); }
+  else if (age <= 6) { score += 8; }
+  else if (age <= 10) { score += 2; }
+  else if (age > 15) { score -= 8; insights.push({t:'15+ year old', pos:false}); }
+
+  // 3. Price drop bonus (+12 if dropping)
+  if (car.isDrop) { score += 12; insights.push({t:'Price just dropped', pos:true}); }
+
+  // 4. Auto transmission slight bonus (+3)
+  if (car.trans && car.trans.toLowerCase().includes('auto')) { score += 3; }
+
+  // 5. Close to minimum price in class (+8 if within 5% of lowest)
+  if (minPrice > 0 && price <= minPrice * 1.05) { score += 8; insights.push({t:'Near lowest price', pos:true}); }
+
+  // 6. Sample size confidence penalty (fewer comps = less reliable)
+  if (sampleSize < 4) score -= 5;
+
+  // 7. Km bonus/penalty (lower km = better deal)
+  if (car.km > 0) {
+    if (car.km < 30000)       { score += 14; insights.push({t: car.km.toLocaleString()+' km — very low', pos:true}); }
+    else if (car.km < 60000)  { score += 9;  insights.push({t: car.km.toLocaleString()+' km — low', pos:true}); }
+    else if (car.km < 100000) { score += 4; }
+    else if (car.km < 150000) { score -= 3; }
+    else if (car.km >= 150000){ score -= 10; insights.push({t: car.km.toLocaleString()+' km — high', pos:false}); }
+  }
+
+  score = Math.max(0, Math.min(100, Math.round(score)));
+  const savings = Math.max(0, avgPrice - price);
+  return { score, insights, savings, avgPrice, pctBelowAvg };
+}
+
+function analyzeDeals() {
+  if (!allResults.length) { alert('Run a scan first to get listings to analyze.'); return; }
+
+  // Build market map: modelKey -> { prices[], cars[] }
+  const market = {};
+  allResults.forEach(c => {
+    const price = colPrice(c);
+    if (!price || price < 200000) return;
+    const key = (c.make + ' ' + c.model).toLowerCase().replace(/\s+/g,' ').trim();
+    if (!market[key]) market[key] = { make:c.make, model:c.model, prices:[], cars:[] };
+    market[key].prices.push(price);
+    market[key].cars.push(c);
+  });
+
+  // Score every car
+  const scored = [];
+  Object.values(market).forEach(m => {
+    if (!m.prices.length) return;
+    m.prices.sort((a,b)=>a-b);
+    // Use trimmed mean (drop top 10% outliers)
+    const cut = Math.floor(m.prices.length * 0.9);
+    const trimmed = m.prices.slice(0, Math.max(1, cut));
+    const avg = Math.round(trimmed.reduce((a,b)=>a+b,0) / trimmed.length);
+    const min = m.prices[0];
+    const max = m.prices[m.prices.length-1];
+    m.avg = avg; m.min = min; m.max = max;
+    m.cars.forEach(c => {
+      const s = scorecar(c, avg, min, max, m.prices.length);
+      if (s) scored.push({ car:c, ...s, marketKey:(c.make+' '+c.model).toLowerCase().replace(/\s+/g,' ').trim() });
+    });
+  });
+
+  scored.sort((a,b) => b.score - a.score);
+  window._dealScored = scored;
+  window._dealMarket = market;
+
+  // Update model filter dropdown
+  const sel = document.getElementById('deal-model-filter');
+  const prev = sel.value;
+  sel.innerHTML = '<option value="">All models</option>';
+  Object.values(market).sort((a,b)=>(a.make+a.model).localeCompare(b.make+b.model)).forEach(m => {
+    const key = (m.make+' '+m.model).toLowerCase().replace(/\s+/g,' ');
+    const opt = document.createElement('option');
+    opt.value = key; opt.textContent = m.make+' '+m.model+' ('+m.cars.length+')';
+    sel.appendChild(opt);
+  });
+  sel.value = prev;
+
+  document.getElementById('deals-tab-count').textContent = scored.length > 0 ? '('+scored.length+')' : '';
+  log('Deal analysis: scored '+scored.length+' listings across '+Object.keys(market).length+' models');
+  renderDeals();
+}
+
+function renderDeals() {
+  const list = document.getElementById('deal-list');
+  const mktDiv = document.getElementById('mkt-overview');
+  const modelFilter = document.getElementById('deal-model-filter').value;
+  const minScore = parseInt(document.getElementById('deal-min-score').value)||0;
+  const scored = window._dealScored || [];
+  const market = window._dealMarket || {};
+
+  if (!scored.length) { list.innerHTML='<div class="empty">No analysis yet. Run a scan then click Analyze.</div>'; mktDiv.innerHTML=''; return; }
+
+  // Market overview cards
+  const mktModels = Object.values(market).filter(m => !modelFilter || (m.make+' '+m.model).toLowerCase().replace(/\s+/g,' ').includes(modelFilter));
+  mktDiv.innerHTML = '<div class="mkt-grid">' + mktModels.slice(0,8).map(m => {
+    const pct = m.min && m.avg ? Math.round((1 - m.min/m.avg)*100) : 0;
+    return `<div class="mkt-card">
+      <div class="mkt-model">${m.make} ${m.model}</div>
+      <div class="mkt-avg">¢${m.avg.toLocaleString()}</div>
+      <div class="mkt-sub">avg · ${m.cars.length} listings · best ¢${m.min.toLocaleString()}</div>
+      ${pct>0?`<div style="font-size:11px;color:var(--green-txt);margin-top:2px">Best is ${pct}% below avg</div>`:''}
+    </div>`;
+  }).join('') + '</div>';
+
+  let data = scored.filter(s => s.score >= minScore);
+  if (modelFilter) data = data.filter(s => s.marketKey.includes(modelFilter));
+  data = data.slice(0, 30);
+
+  if (!data.length) { list.innerHTML='<div class="empty">No deals match your current filters.</div>'; document.getElementById('deal-count').textContent='No matches'; return; }
+  document.getElementById('deal-count').textContent = data.length+' deal'+(data.length!==1?'s':'')+' found';
+
+  list.innerHTML = data.map((s, i) => {
+    const c = s.car;
+    const price = colPrice(c);
+    const priceStr = c.priceC ? '¢'+c.priceC.toLocaleString() : '$'+c.priceU.toLocaleString();
+    const usd = c.priceC ? '≈ $'+Math.round(c.priceC/482).toLocaleString() : '';
+    const rankClass = i===0?'gold':i===1?'silver':i===2?'bronze':'';
+    const rankIcon = i===0?'🥇':i===1?'🥈':i===2?'🥉':'#'+(i+1);
+    const scoreClass = s.score>=88?'s-great':s.score>=70?'s-good':'s-ok';
+    const badgeClass = s.score>=88?'sb-great':s.score>=70?'sb-good':'sb-ok';
+    const badgeLabel = s.score>=88?'🔥 Hot steal':s.score>=75?'✅ Great deal':s.score>=60?'👍 Good deal':'Deal';
+    const fillW = s.score;
+    const savingStr = s.savings > 0 ? `Save ¢${Math.round(s.savings).toLocaleString()} vs avg` : 'Near market avg';
+    const insightHtml = s.insights.map(ins=>`<span class="insight ${ins.pos?'i-pos':'i-neg'}">${ins.t}</span>`).join('');
+    const kmStr = c.km > 0 ? c.km.toLocaleString()+' km' : '';
+    return `<a href="${c.url}" target="_blank" class="deal-card" style="text-decoration:none;color:inherit;cursor:pointer;display:flex" title="Open listing">
+      <div class="deal-rank ${rankClass}">${rankIcon}</div>
+      <div class="deal-body">
+        <div class="deal-title">${c.make||''} ${c.model||''} ${c.year?'('+c.year+')':''} ${s.score>=88?'<span style="font-size:13px">🔥</span>':''}</div>
+        <div class="deal-meta">${c.trans||''}${kmStr?' · <strong>'+kmStr+'</strong>':''}${c.desc?' · '+c.desc.slice(0,55)+(c.desc.length>55?'…':''):''}</div>
+        <div class="insight-row">${insightHtml}<span class="score-badge ${badgeClass}">${badgeLabel}</span></div>
+        <div class="deal-score-bar"><div class="deal-score-fill ${scoreClass}" style="width:${fillW}%"></div></div>
+        <div style="display:flex;align-items:center;justify-content:space-between;margin-top:5px">
+          <span style="font-size:11px;color:var(--txt2)">Deal score: <strong>${s.score}/100</strong></span>
+          <span style="font-size:11px;color:#185fa5;font-weight:500">Open listing →</span>
+        </div>
+      </div>
+      <div class="deal-right">
+        <div class="deal-price">${priceStr}</div>
+        ${usd?`<div class="deal-vs">${usd}</div>`:''}
+        <div class="deal-saving">${savingStr}</div>
+        <div class="deal-vs">Market avg: ¢${s.avgPrice.toLocaleString()}</div>
+      </div>
+    </a>`;
+  }).join('');
+}
+// ── END DEAL FINDER ──────────────────────────────────────────
+
+
+function scanAll() {
+  // temporarily blank all filters, run scan, then notify
+  const fields = ['f-make','f-model','f-ymin','f-ymax','f-pmin','f-pmax','f-kmmax'];
+  const saved = {};
+  fields.forEach(id => {
+    const el = document.getElementById(id);
+    if (el) { saved[id] = el.value; el.value = ''; }
+  });
+  const savedTrans = document.getElementById('f-trans').value;
+  document.getElementById('f-trans').value = '';
+
+  log('Scanning ALL makes — filters temporarily cleared.');
+  notify('Scanning all makes — no filters applied. Results will populate for Deal Finder.');
+
+  // after scan completes, restore filters
+  const origRender = window._afterScanHook;
+  window._afterScanHook = () => {
+    fields.forEach(id => {
+      const el = document.getElementById(id);
+      if (el) el.value = saved[id];
+    });
+    document.getElementById('f-trans').value = savedTrans;
+    window._afterScanHook = origRender;
+    log('Filters restored after full scan.');
+  };
+
+  runScan('custom');
+}
+function updateWCards() {
+  document.getElementById('wgrid').innerHTML = HOT_MODELS.map(m => {
+    const rel = allResults.filter(c =>
+      c.make?.toLowerCase().includes(m.make.toLowerCase()) &&
+      c.model?.toLowerCase().includes(m.model.split(' ')[0].toLowerCase())
+    );
+    const drops = dropAlerts.filter(c => c.model?.toLowerCase().includes(m.model.split(' ')[0].toLowerCase()));
+    const prices = rel.map(c=>colPrice(c)).filter(p=>p>0);
+    const best = prices.length ? Math.min(...prices) : 0;
+    const on = activeHot.has(m.id);
+    return `<div class="wcard${on?' on':''}" id="wcard-${m.id}">
+      <div style="display:flex;justify-content:space-between;align-items:flex-start">
+        <div onclick="toggleHot('${m.id}')" style="flex:1;cursor:pointer">
+          <div class="wcard-name">${m.make} ${m.model}</div>
+          <div class="wcard-sub">${rel.length} listing${rel.length!==1?'s':''} seen</div>
+          ${best?`<div class="wcard-price">Best: ¢${best.toLocaleString()}</div>`:'<div class="wcard-sub">Not scanned yet</div>'}
+          ${drops.length?`<div class="wcard-drop">${drops.length} drop${drops.length!==1?'s':''} found</div>`:''}
+        </div>
+        <button onclick="removeHotModel('${m.id}')" title="Remove" style="padding:2px 6px;font-size:14px;border:none;background:transparent;color:var(--txt2);cursor:pointer;line-height:1;flex-shrink:0" onmouseover="this.style.color='var(--red-txt)'" onmouseout="this.style.color='var(--txt2)'">×</button>
+      </div>
+    </div>`;
+  }).join('');
+  document.getElementById('hot-badge').textContent = 'Hot cars: '+HOT_MODELS.length;
+}
+
+function toggleHot(id) {
+  if (activeHot.has(id)) activeHot.delete(id); else activeHot.add(id);
+  updateWCards();
+}
+
+function addHotModel() {
+  const makeEl = document.getElementById('add-make');
+  const modelEl = document.getElementById('add-model');
+  const errEl = document.getElementById('add-err');
+  const make = makeEl.value.trim();
+  const model = modelEl.value.trim();
+  errEl.style.display = 'none';
+  if (!make || !model) { errEl.textContent = 'Please fill in both make and model.'; errEl.style.display='block'; return; }
+  const id = (make+'-'+model).toLowerCase().replace(/\s+/g,'-').replace(/[^a-z0-9\-]/g,'');
+  if (HOT_MODELS.find(m=>m.id===id)) { errEl.textContent = 'That model is already in the list.'; errEl.style.display='block'; return; }
+  HOT_MODELS.push({id, make, model});
+  activeHot.add(id);
+  saveHotModels();
+  makeEl.value=''; modelEl.value='';
+  updateWCards();
+  log(`Added ${make} ${model} to hot car watchlist.`);
+}
+
+function removeHotModel(id) {
+  const m = HOT_MODELS.find(x=>x.id===id);
+  if (!m) return;
+  if (!confirm(`Remove ${m.make} ${m.model} from your watchlist?`)) return;
+  HOT_MODELS = HOT_MODELS.filter(x=>x.id!==id);
+  activeHot.delete(id);
+  saveHotModels();
+  updateWCards();
+  log(`Removed ${m.make} ${m.model} from hot car watchlist.`);
+}
+
+function toggleSched() {
+  if (!schedOn) {
+    if (Notification.permission!=='granted') Notification.requestPermission();
+    schedOn = true;
+    document.getElementById('btn-sched').textContent = 'Stop scheduler';
+    document.getElementById('sched-badge').textContent = 'Scheduler on';
+    document.getElementById('sched-badge').className = 'badge b-on';
+    document.getElementById('timer').style.display = '';
+    log('Custom scheduler started.');
+    runScan('custom'); schedNext();
+  } else {
+    clearTimeout(schedTimer); clearInterval(cdInterval);
+    schedOn = false;
+    document.getElementById('btn-sched').textContent = 'Start scheduler';
+    document.getElementById('sched-badge').textContent = 'Scheduler off';
+    document.getElementById('sched-badge').className = 'badge b-off';
+    document.getElementById('timer').style.display = 'none';
+    log('Custom scheduler stopped.');
+  }
+}
+
+function schedNext() {
+  const iv = parseInt(document.getElementById('f-interval').value)||7200000;
+  nextScan = Date.now()+iv;
+  schedTimer = setTimeout(()=>{ runScan('custom'); if(schedOn) schedNext(); }, iv);
+  clearInterval(cdInterval);
+  cdInterval = setInterval(()=>{
+    if (!nextScan) return;
+    const rem = Math.max(0, nextScan-Date.now());
+    const h=Math.floor(rem/3600000), m=Math.floor((rem%3600000)/60000), s=Math.floor((rem%60000)/1000);
+    const p=n=>String(n).padStart(2,'0');
+    document.getElementById('timer').textContent = `Next scan: ${h?h+'h ':''}${p(m)}m ${p(s)}s`;
+  },1000);
+}
+
+let hotSchedTimer2=null;
+function toggleHotSched() {
+  if (!hotSchedOn) {
+    hotSchedOn = true;
+    document.getElementById('btn-hot-sched').textContent = 'Stop hot scheduler';
+    log('Hot car scheduler started (every 2h).');
+    runScan('hot');
+    hotSchedTimer2 = setInterval(()=>runScan('hot'), 7200000);
+  } else {
+    clearInterval(hotSchedTimer2);
+    hotSchedOn = false;
+    document.getElementById('btn-hot-sched').textContent = 'Start hot scheduler';
+    log('Hot car scheduler stopped.');
+  }
+}
+
+function clearAll() {
+  allResults=[]; seenIds.clear(); dropAlerts=[];
+  stats={found:0,drops:0,scans:0,last:'—'};
+  document.getElementById('rlist').innerHTML='<div class="empty">Run a scan to see results.</div>';
+  document.getElementById('drop-list').innerHTML='<div class="empty">No drops detected yet.</div>';
+  document.getElementById('res-tab-count').textContent='';
+  document.getElementById('drop-tab-count').textContent='';
+  ['s-found','s-drops','s-scans'].forEach(id=>document.getElementById(id).textContent='0');
+  document.getElementById('s-last').textContent='—';
+  updateWCards();
+  log('All results cleared.');
+}
+
+updateWCards();
+</script>
+</body>
+</html>
