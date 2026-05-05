@@ -1,11 +1,1 @@
-{
-  "name": "crautos-bot",
-  "version": "2.0.0",
-  "description": "CRautos car listing bot with price drop tracker",
-  "main": "server.js",
-  "scripts": {
-    "start": "node server.js",
-    "dev": "node --watch server.js"
-  },
-  "dependencies": {}
-}
+{"scripts":{"start":"node server.js"}}
