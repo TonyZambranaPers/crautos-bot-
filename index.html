@@ -72,14 +72,15 @@
   .stat{background:var(--bg2);border-radius:var(--radius);padding:.65rem .9rem}
   .stat-lbl{font-size:11px;color:var(--txt2)}
   .stat-val{font-size:20px;font-weight:600;margin-top:2px}
-  .wgrid{display:grid;grid-template-columns:repeat(auto-fill,minmax(165px,1fr));gap:.5rem}
-  .wcard{border:1px solid var(--border);border-radius:var(--radius);padding:.65rem .9rem;cursor:pointer;transition:all .12s;background:var(--bg)}
+  .wgrid{display:grid;grid-template-columns:repeat(3,1fr);gap:.6rem;margin-bottom:.5rem}
+  .wcard{border:1px solid var(--border);border-radius:var(--radius);padding:.7rem .9rem;cursor:pointer;transition:all .12s;background:var(--bg)}
   .wcard:hover{background:var(--bg2)}
-  .wcard.on{border:2px solid var(--txt)}
-  .wcard-name{font-size:13px;font-weight:600}
+  .wcard.on{border:2px solid var(--txt);background:var(--bg)}
+  .wcard-name{font-size:13px;font-weight:600;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
   .wcard-sub{font-size:11px;color:var(--txt2);margin-top:2px}
   .wcard-price{font-size:12px;color:var(--green-txt);font-weight:600;margin-top:3px}
   .wcard-drop{font-size:11px;color:#854f0b;margin-top:2px}
+  @media(max-width:700px){.wgrid{grid-template-columns:repeat(2,1fr)}}
   a{color:#185fa5;text-decoration:none}
   a:hover{text-decoration:underline}
   @media(max-width:600px){.g3{grid-template-columns:1fr 1fr}.g2{grid-template-columns:1fr}}
@@ -206,11 +207,11 @@
       <div class="wgrid" id="wgrid"></div>
       <div style="border-top:1px solid var(--border);margin-top:.85rem;padding-top:.85rem">
         <div class="sec" style="margin-bottom:.5rem">Add a model to track</div>
-        <div style="display:flex;gap:.5rem;flex-wrap:wrap;align-items:flex-end">
-          <div style="flex:1;min-width:120px"><label>Make</label><input id="add-make" placeholder="e.g. Honda" autocomplete="off"></div>
-          <div style="flex:1;min-width:140px"><label>Model</label><input id="add-model" placeholder="e.g. CR-V" autocomplete="off"></div>
-          <button class="btn-p" onclick="addHotModel()" style="margin-top:auto;white-space:nowrap">+ Add model</button>
+        <div class="g2" style="margin-bottom:.5rem">
+          <div><label>Make</label><input id="add-make" placeholder="e.g. Honda" autocomplete="off"></div>
+          <div><label>Model</label><input id="add-model" placeholder="e.g. CR-V" autocomplete="off"></div>
         </div>
+        <button class="btn-p" onclick="addHotModel()" style="white-space:nowrap">+ Add model</button>
         <div id="add-err" style="font-size:12px;color:var(--red-txt);margin-top:.4rem;display:none"></div>
       </div>
     </div>
