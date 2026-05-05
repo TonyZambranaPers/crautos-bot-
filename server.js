@@ -355,8 +355,8 @@ const server = http.createServer(async (req, res) => {
     return;
   }
 
-  // ── /login.html — always public ──
-  if (pathname === '/login.html') {
+  // ── /login.html — always public, no auth required ──
+  if (pathname === '/login.html' || pathname === '/login') {
     const filePath = path.join(__dirname, 'public', 'login.html');
     if (fs.existsSync(filePath)) {
       res.writeHead(200, { 'Content-Type': 'text/html' });
@@ -364,8 +364,15 @@ const server = http.createServer(async (req, res) => {
     }
   }
 
+  // ── / root — redirect to login if not authenticated ──
+  if (pathname === '/' && !getSession(req)) {
+    res.writeHead(302, { Location: '/login.html' });
+    res.end();
+    return;
+  }
+
   // ── all other routes require auth ──
-  if (!requireAuth(req, res)) return;
+  if (pathname !== '/login.html' && !requireAuth(req, res)) return;
 
   if (pathname === '/health') {
     const s = getSession(req);
@@ -405,8 +412,9 @@ const server = http.createServer(async (req, res) => {
     }
   }
 
-  // serve static files
-  const filePath = path.join(__dirname, 'public', pathname === '/' ? 'index.html' : pathname);
+  // serve static files (index.html requires auth, login.html is public)
+  const staticFile = pathname === '/' ? 'index.html' : pathname.replace(/^\//, '');
+  const filePath = path.join(__dirname, 'public', staticFile);
   if (fs.existsSync(filePath)) {
     const ext = path.extname(filePath);
     const mime = { '.html': 'text/html', '.js': 'application/javascript', '.css': 'text/css' }[ext] || 'text/plain';
