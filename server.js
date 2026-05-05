@@ -3,7 +3,7 @@ const https = require('https');
 const fs = require('fs');
 const path = require('path');
 
-const PORT = 3333;
+const PORT = process.env.PORT || 3333;
 
 // ── users (add/remove users here) ──
 const USERS = {
