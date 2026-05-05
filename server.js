@@ -412,9 +412,13 @@ const server = http.createServer(async (req, res) => {
     }
   }
 
-  // serve static files (index.html requires auth, login.html is public)
-  const staticFile = pathname === '/' ? 'index.html' : pathname.replace(/^\//, '');
+  // serve static files
+  let staticName = pathname;
+  if (pathname === '/' || pathname === '') staticName = '/index.html';
+  // strip leading slash
+  const staticFile = staticName.replace(/^\//, '');
   const filePath = path.join(__dirname, 'public', staticFile);
+  console.log('Serving static:', filePath, 'exists:', fs.existsSync(filePath));
   if (fs.existsSync(filePath)) {
     const ext = path.extname(filePath);
     const mime = { '.html': 'text/html', '.js': 'application/javascript', '.css': 'text/css' }[ext] || 'text/plain';
@@ -422,7 +426,11 @@ const server = http.createServer(async (req, res) => {
     return res.end(fs.readFileSync(filePath));
   }
 
-  res.writeHead(404); res.end('Not found');
+  // fallback — list what's in public dir for debugging
+  const publicDir = path.join(__dirname, 'public');
+  const files = fs.existsSync(publicDir) ? fs.readdirSync(publicDir) : [];
+  res.writeHead(404); 
+  res.end(JSON.stringify({ error: 'Not found', path: filePath, publicFiles: files }));
 });
 
 server.listen(PORT, '0.0.0.0', () => {
