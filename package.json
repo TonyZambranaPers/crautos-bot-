@@ -1,1 +1,12 @@
-{"scripts":{"start":"node server.js"}}
+{
+  "name": "crautos-bot",
+  "version": "3.0.0",
+  "description": "CRautos car flipping intelligence platform",
+  "main": "server.js",
+  "scripts": {
+    "start": "node server.js"
+  },
+  "dependencies": {
+    "pg": "^8.11.3"
+  }
+}
