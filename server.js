@@ -327,13 +327,18 @@ const server = http.createServer(async (req,res)=>{
   if(pn==='/scan'){
     const filters={make:(q.make||'').toLowerCase().trim(),model:(q.model||'').toLowerCase().trim(),trans:q.trans||'',fuel:q.fuel||'',ymin:q.ymin,ymax:q.ymax,pmin:q.pmin,pmax:q.pmax,kmmax:q.kmmax};
     const totalPages=parseInt(q.totalPages)||3, page=parseInt(q.page)||1;
+    const scanAll = totalPages>=999;
     try{
-      const allCars=[];let totalIds=0;
-      for(let pg=page;pg<page+totalPages;pg++){
+      const allCars=[];let totalIds=0;let emptyStreak=0;
+      let pg=page;
+      while(true){
         const {cars,ids,done}=await scanOnePage(pg,filters);
         allCars.push(...cars);totalIds+=ids;
-        if(done)break;
-        if(pg<page+totalPages-1)await new Promise(r=>setTimeout(r,400));
+        if(done||ids===0){ emptyStreak++; if(emptyStreak>=2)break; }
+        else emptyStreak=0;
+        pg++;
+        if(!scanAll && pg>=page+totalPages)break;
+        await new Promise(r=>setTimeout(r,400));
       }
       res.writeHead(200,{'Content-Type':'application/json'});
       res.end(JSON.stringify({ok:true,count:allCars.length,totalIds,cars:allCars}));
