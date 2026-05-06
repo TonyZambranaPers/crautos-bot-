@@ -262,21 +262,28 @@ let isFullScanRunning=false, lastFullScan=null, fullScanProgress={page:0,total:0
 async function runFullScan() {
   if(isFullScanRunning)return;
   isFullScanRunning=true;
-  console.log('Full scan started');
-  let page=1,total=0;
+  console.log('Full scan started — scanning ALL pages');
+  let page=1,total=0,emptyStreak=0;
   try {
-    while(page<=50){
+    while(true){
       fullScanProgress={page,total};
       const {ids,done}=await scanOnePage(page,{});
-      total+=ids; if(done||ids===0)break;
-      page++; await new Promise(r=>setTimeout(r,500));
+      total+=ids;
+      if(done||ids===0){ emptyStreak++; if(emptyStreak>=3)break; }
+      else emptyStreak=0;
+      page++;
+      // log progress every 10 pages
+      if(page%10===0) console.log(`Full scan progress: page ${page}, ${total} listings so far`);
+      await new Promise(r=>setTimeout(r,500));
     }
     lastFullScan=new Date().toISOString();
-    console.log(`Full scan done: ${total} listings, ${page} pages`);
+    console.log(`Full scan done: ${total} listings across ${page} pages`);
   } catch(e){console.error('Full scan error:',e.message);}
   isFullScanRunning=false;
 }
+// run full scan every hour
 setInterval(runFullScan,3600000);
+// first scan 15s after startup
 setTimeout(runFullScan,15000);
 
 function setCORS(res){res.setHeader('Access-Control-Allow-Origin','*');res.setHeader('Access-Control-Allow-Methods','GET,POST,OPTIONS');res.setHeader('Access-Control-Allow-Headers','Content-Type');}
