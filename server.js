@@ -245,7 +245,13 @@ async function scanOnePage(pageNum, filters) {
     for(const r of results){
       if(r.status==='fulfilled'&&r.value){
         const car=r.value;
-        await upsertListing(car);
+        // fire-and-forget DB write during full scan, await during user scan
+        const isUserScan = Object.keys(filters).some(k=>filters[k]);
+        if(isUserScan) {
+          await upsertListing(car);
+        } else {
+          upsertListing(car).catch(e=>{}); // non-blocking for background scan
+        }
         if(matchesFilters(car,filters)){
           const market=await getMarketStats(car.make,car.model,car.year);
           car.flipScore=calcFlipScore(car,market);
@@ -253,7 +259,7 @@ async function scanOnePage(pageNum, filters) {
         }
       }
     }
-    if(i+8<ids.length)await new Promise(r=>setTimeout(r,300));
+    if(i+8<ids.length)await new Promise(r=>setTimeout(r,isFullScanRunning?150:300));
   }
   return{cars,ids:ids.length,done:false};
 }
